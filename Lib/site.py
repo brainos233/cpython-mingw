@@ -260,7 +260,8 @@ def _getuserbase():
     def joinuser(*args):
         return os.path.expanduser(os.path.join(*args))
 
-    if os.name == "nt":
+    from sysconfig import _POSIX_BUILD
+    if os.name == "nt" and not _POSIX_BUILD:
         base = os.environ.get("APPDATA") or "~"
         return joinuser(base, "Python")
 
@@ -275,7 +276,8 @@ def _getuserbase():
 def _get_path(userbase):
     version = sys.version_info
 
-    if os.name == 'nt':
+    from sysconfig import _POSIX_BUILD
+    if sys.platform == 'win32' and not _POSIX_BUILD:
         return f'{userbase}\\Python{version[0]}{version[1]}\\site-packages'
 
     if sys.platform == 'darwin' and sys._framework:
@@ -338,6 +340,7 @@ def getsitepackages(prefixes=None):
     if prefixes is None:
         prefixes = PREFIXES
 
+    from sysconfig import _POSIX_BUILD
     for prefix in prefixes:
         if not prefix or prefix in seen:
             continue
@@ -347,7 +350,7 @@ def getsitepackages(prefixes=None):
         if sys.platlibdir != "lib":
             libdirs.append("lib")
 
-        if os.sep == '/':
+        if _POSIX_BUILD:
             for libdir in libdirs:
                 path = os.path.join(prefix, libdir,
                                     "python%d.%d" % sys.version_info[:2],
